@@ -109,7 +109,6 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ctest --output-on-failure ^
 -C %config% ^
--E testdata-overview
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 
