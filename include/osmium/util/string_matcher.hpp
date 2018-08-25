@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -45,7 +45,7 @@ DEALINGS IN THE SOFTWARE.
 // std::regex isn't implemented properly in glibc++ (before the version
 // delivered with GCC 4.9) and libc++ before the version 3.6, so the use is
 // disabled by these checks. Checks for GLIBC were based on
-// http://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
+// https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
 // Checks for libc++ are simply based on compiler defines. This is probably
 // not optimal but seems to work for now.
 #if defined(__GLIBCXX__)
@@ -391,7 +391,7 @@ namespace osmium {
          */
         template <typename TMatcher, typename std::enable_if<
             std::is_base_of<matcher, TMatcher>::value, int>::type = 0>
-        StringMatcher(TMatcher&& matcher) : // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        StringMatcher(TMatcher&& matcher) : // NOLINT(google-explicit-constructor, hicpp-explicit-conversions, misc-forwarding-reference-overload)
             m_matcher(std::forward<TMatcher>(matcher)) {
         }
 

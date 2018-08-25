@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -119,7 +119,7 @@ namespace osmium {
 
                 size_t used_memory() const final {
                     // unused elements use 1 bit, used elements sizeof(TValue) bytes
-                    // http://google-sparsehash.googlecode.com/svn/trunk/doc/sparsetable.html
+                    // https://github.com/sparsehash/sparsehash/blob/master/doc/sparsetable.html
                     return (m_elements.size() / 8) + (m_elements.num_nonempty() * sizeof(TValue));
                 }
 

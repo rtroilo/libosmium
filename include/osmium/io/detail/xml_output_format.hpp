@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -34,7 +34,6 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include <osmium/handler.hpp>
-#include <osmium/io/detail/metadata_options.hpp>
 #include <osmium/io/detail/output_format.hpp>
 #include <osmium/io/detail/queue_util.hpp>
 #include <osmium/io/detail/string_util.hpp>
@@ -47,6 +46,7 @@ DEALINGS IN THE SOFTWARE.
 #include <osmium/osm/changeset.hpp>
 #include <osmium/osm/item_type.hpp>
 #include <osmium/osm/location.hpp>
+#include <osmium/osm/metadata_options.hpp>
 #include <osmium/osm/node.hpp>
 #include <osmium/osm/node_ref.hpp>
 #include <osmium/osm/object.hpp>
@@ -74,7 +74,7 @@ namespace osmium {
             struct xml_output_options {
 
                 /// Which metadata of objects should be added?
-                metadata_options add_metadata;
+                osmium::metadata_options add_metadata;
 
                 /// Should the visible flag be added to all OSM objects?
                 bool add_visible_flag = false;
@@ -152,7 +152,7 @@ namespace osmium {
 
                     if (m_options.add_metadata.timestamp() && object.timestamp()) {
                         *m_out += " timestamp=\"";
-                        *m_out += object.timestamp().to_iso();
+                        *m_out += object.timestamp().to_iso_all();
                         *m_out += "\"";
                     }
 
@@ -198,7 +198,7 @@ namespace osmium {
                         *m_out += " user=\"";
                         append_xml_encoded_string(*m_out, comment.user());
                         *m_out += "\" date=\"";
-                        *m_out += comment.date().to_iso();
+                        *m_out += comment.date().to_iso_all();
                         *m_out += "\">\n";
                         *m_out += "    <text>";
                         append_xml_encoded_string(*m_out, comment.text());
@@ -428,7 +428,7 @@ namespace osmium {
 
                 XMLOutputFormat(osmium::thread::Pool& pool, const osmium::io::File& file, future_string_queue_type& output_queue) :
                     OutputFormat(pool, output_queue) {
-                    m_options.add_metadata      = metadata_options{file.get("add_metadata")};
+                    m_options.add_metadata      = osmium::metadata_options{file.get("add_metadata")};
                     m_options.use_change_ops    = file.is_true("xml_change_format");
                     m_options.add_visible_flag  = (file.has_multiple_object_versions() || file.is_true("force_visible_flag")) && !m_options.use_change_ops;
                     m_options.locations_on_ways = file.is_true("locations_on_ways");

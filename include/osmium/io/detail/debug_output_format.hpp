@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -33,7 +33,6 @@ DEALINGS IN THE SOFTWARE.
 
 */
 
-#include <osmium/io/detail/metadata_options.hpp>
 #include <osmium/io/detail/output_format.hpp>
 #include <osmium/io/detail/queue_util.hpp>
 #include <osmium/io/detail/string_util.hpp>
@@ -45,8 +44,10 @@ DEALINGS IN THE SOFTWARE.
 #include <osmium/osm/box.hpp>
 #include <osmium/osm/changeset.hpp>
 #include <osmium/osm/crc.hpp>
+#include <osmium/osm/crc_zlib.hpp>
 #include <osmium/osm/item_type.hpp>
 #include <osmium/osm/location.hpp>
+#include <osmium/osm/metadata_options.hpp>
 #include <osmium/osm/node.hpp>
 #include <osmium/osm/node_ref.hpp>
 #include <osmium/osm/object.hpp>
@@ -58,8 +59,6 @@ DEALINGS IN THE SOFTWARE.
 #include <osmium/thread/pool.hpp>
 #include <osmium/util/minmax.hpp>
 #include <osmium/visitor.hpp>
-
-#include <boost/crc.hpp>
 
 #include <cinttypes>
 #include <cmath>
@@ -94,7 +93,7 @@ namespace osmium {
             struct debug_output_options {
 
                 /// Which metadata of objects should be added?
-                metadata_options add_metadata;
+                osmium::metadata_options add_metadata;
 
                 /// Output with ANSI colors?
                 bool use_color = false;
@@ -111,6 +110,8 @@ namespace osmium {
              * Writes out one buffer with OSM data in Debug format.
              */
             class DebugOutputBlock : public OutputBlock {
+
+                using crc_type = osmium::CRC_zlib;
 
                 debug_output_options m_options;
 
@@ -315,14 +316,14 @@ namespace osmium {
                 template <typename T>
                 void write_crc32(const T& object) {
                     write_fieldname("crc32");
-                    osmium::CRC<boost::crc_32_type> crc32;
+                    osmium::CRC<crc_type> crc32;
                     crc32.update(object);
                     output_formatted("    %x\n", crc32().checksum());
                 }
 
                 void write_crc32(const osmium::Changeset& object) {
                     write_fieldname("crc32");
-                    osmium::CRC<boost::crc_32_type> crc32;
+                    osmium::CRC<crc_type> crc32;
                     crc32.update(object);
                     output_formatted("      %x\n", crc32().checksum());
                 }
@@ -529,7 +530,7 @@ namespace osmium {
 
                 DebugOutputFormat(osmium::thread::Pool& pool, const osmium::io::File& file, future_string_queue_type& output_queue) :
                     OutputFormat(pool, output_queue) {
-                    m_options.add_metadata   = metadata_options{file.get("add_metadata")};
+                    m_options.add_metadata   = osmium::metadata_options{file.get("add_metadata")};
                     m_options.use_color      = file.is_true("color");
                     m_options.add_crc32      = file.is_true("add_crc32");
                     m_options.format_as_diff = file.is_true("diff");

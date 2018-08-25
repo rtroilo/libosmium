@@ -6,6 +6,7 @@
 #include <osmium/io/detail/queue_util.hpp>
 #include <osmium/io/gzip_compression.hpp>
 #include <osmium/io/xml_input.hpp>
+#include <osmium/util/misc.hpp>
 #include <osmium/visitor.hpp>
 
 #include <cassert>
@@ -116,6 +117,19 @@ static header_buffer_type read_xml(const char* test_id) {
     return parse_xml(input);
 }
 
+template <typename TException>
+void test_fail(const char* xml_file_name, const char* errmsg) {
+    REQUIRE_THROWS_AS(read_xml(xml_file_name), const TException&);
+    REQUIRE_THROWS_WITH(read_xml(xml_file_name), errmsg);
+
+    REQUIRE_THROWS_AS([&](){
+        osmium::io::Reader reader{filename(xml_file_name)};
+        const osmium::io::Header header{reader.header()};
+        osmium::memory::Buffer buffer = reader.read();
+        reader.close();
+    }(), const TException&);
+}
+
 // =============================================
 
 TEST_CASE("Reading OSM XML 100: Direct") {
@@ -148,8 +162,9 @@ TEST_CASE("Reading OSM XML 100: Using Reader asking for header only") {
 
 // =============================================
 
-TEST_CASE("Reading OSM XML 101: Direct") {
-    REQUIRE_THROWS_AS(read_xml("101-missing_version"), const osmium::format_version_error&);
+TEST_CASE("Reading OSM XML 101") {
+    test_fail<osmium::format_version_error>("101-missing_version", "Can not read file without version (missing version attribute on osm element).");
+
     try {
         read_xml("101-missing_version");
     } catch (const osmium::format_version_error& e) {
@@ -157,19 +172,11 @@ TEST_CASE("Reading OSM XML 101: Direct") {
     }
 }
 
-TEST_CASE("Reading OSM XML 101: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("101-missing_version")};
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::format_version_error&);
-}
-
 // =============================================
 
-TEST_CASE("Reading OSM XML 102: Direct") {
-    REQUIRE_THROWS_AS(read_xml("102-wrong_version"), const osmium::format_version_error&);
+TEST_CASE("Reading OSM XML 102") {
+    test_fail<osmium::format_version_error>("102-wrong_version", "Can not read file with version 0.1");
+
     try {
         read_xml("102-wrong_version");
     } catch (const osmium::format_version_error& e) {
@@ -177,20 +184,11 @@ TEST_CASE("Reading OSM XML 102: Direct") {
     }
 }
 
-TEST_CASE("Reading OSM XML 102: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("102-wrong_version")};
-
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::format_version_error&);
-}
-
 // =============================================
 
-TEST_CASE("Reading OSM XML 103: Direct") {
-    REQUIRE_THROWS_AS(read_xml("103-old_version"), const osmium::format_version_error&);
+TEST_CASE("Reading OSM XML 103") {
+    test_fail<osmium::format_version_error>("103-old_version", "Can not read file with version 0.5");
+
     try {
         read_xml("103-old_version");
     } catch (const osmium::format_version_error& e) {
@@ -198,19 +196,11 @@ TEST_CASE("Reading OSM XML 103: Direct") {
     }
 }
 
-TEST_CASE("Reading OSM XML 103: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("103-old_version")};
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::format_version_error&);
-}
-
 // =============================================
 
-TEST_CASE("Reading OSM XML 104: Direct") {
-    REQUIRE_THROWS_AS(read_xml("104-empty_file"), const osmium::xml_error&);
+TEST_CASE("Reading OSM XML 104") {
+    test_fail<osmium::xml_error>("104-empty_file", "XML parsing error at line 1, column 0: no element found");
+
     try {
         read_xml("104-empty_file");
     } catch (const osmium::xml_error& e) {
@@ -219,28 +209,49 @@ TEST_CASE("Reading OSM XML 104: Direct") {
     }
 }
 
-TEST_CASE("Reading OSM XML 104: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("104-empty_file")};
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::xml_error&);
+// =============================================
+
+TEST_CASE("Reading OSM XML 105") {
+    test_fail<osmium::xml_error>("105-incomplete_xml_file", "XML parsing error at line 3, column 0: no element found");
 }
 
 // =============================================
 
-TEST_CASE("Reading OSM XML 105: Direct") {
-    REQUIRE_THROWS_AS(read_xml("105-incomplete_xml_file"), const osmium::xml_error&);
+TEST_CASE("Reading OSM XML 106") {
+    test_fail<osmium::xml_error>("106-invalid_xml_file", "xml file nested too deep");
 }
 
-TEST_CASE("Reading OSM XML 105: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("105-incomplete_xml_file")};
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::xml_error&);
+// =============================================
+
+TEST_CASE("Reading OSM XML 107") {
+    test_fail<osmium::xml_error>("107-wrongly_nested_xml_file", "Unknown element in <node>: modify");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 108") {
+    test_fail<osmium::xml_error>("108-unknown_top_level", "Unknown top-level element: foo");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 109: Direct") {
+    read_xml("109-unknown_data_level");
+}
+
+TEST_CASE("Reading OSM XML 109: Using Reader") {
+    osmium::io::Reader reader{filename("109-unknown_data_level")};
+
+    const osmium::io::Header header{reader.header()};
+    osmium::memory::Buffer buffer = reader.read();
+    REQUIRE(buffer.committed() > 0);
+    reader.close();
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 110") {
+    test_fail<osmium::xml_error>("110-entity_declaration", "XML entities are not supported");
 }
 
 // =============================================
@@ -286,17 +297,44 @@ TEST_CASE("Reading OSM XML 121: Using Reader") {
 
 // =============================================
 
-TEST_CASE("Reading OSM XML 122: Direct") {
-    REQUIRE_THROWS_AS(read_xml("122-no_osm_element"), const osmium::xml_error&);
+TEST_CASE("Reading OSM XML 122") {
+    test_fail<osmium::xml_error>("122-no_osm_element", "Unknown top-level element: node");
 }
 
-TEST_CASE("Reading OSM XML 122: Using Reader") {
-    REQUIRE_THROWS_AS([](){
-        osmium::io::Reader reader{filename("122-no_osm_element")};
-        const osmium::io::Header header{reader.header()};
-        osmium::memory::Buffer buffer = reader.read();
-        reader.close();
-    }(), const osmium::xml_error&);
+// =============================================
+
+TEST_CASE("Reading OSM XML 123") {
+    test_fail<osmium::xml_error>("123-unknown_element_in_node", "Unknown element in <node>: nd");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 124") {
+    test_fail<osmium::xml_error>("124-unknown_element_in_way", "Unknown element in <way>: member");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 125") {
+    test_fail<osmium::xml_error>("125-unknown_element_in_relation", "Unknown element in <relation>: nd");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 126") {
+    test_fail<osmium::xml_error>("126-wrong_member_type", "Unknown type on relation <member>");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 127") {
+    test_fail<osmium::xml_error>("127-missing_member_type", "Unknown type on relation <member>");
+}
+
+// =============================================
+
+TEST_CASE("Reading OSM XML 128") {
+    test_fail<osmium::xml_error>("128-missing_member_ref", "Missing ref on relation <member>");
 }
 
 // =============================================
@@ -314,7 +352,7 @@ TEST_CASE("Reading OSM XML 140: Using Reader") {
 
         const char* uc = t["unicode_char"];
 
-        const auto len = atoi(t["unicode_utf8_length"]);
+        const auto len = osmium::detail::str_to_int<std::size_t>(t["unicode_utf8_length"]);
         REQUIRE(len == std::strlen(uc));
 
         REQUIRE(S_(uc) == t["unicode_xml"]);
@@ -323,7 +361,7 @@ TEST_CASE("Reading OSM XML 140: Using Reader") {
 #if !defined(_MSC_VER)
         switch (count) {
             case 1:
-                REQUIRE(S_(uc) ==  u8"a");
+                REQUIRE(S_(uc) == u8"a");
                 break;
             case 2:
                 REQUIRE(S_(uc) == u8"\u00e4");
@@ -510,6 +548,33 @@ TEST_CASE("Reading OSM XML 200: Using Reader asking for ways") {
     osmium::memory::Buffer buffer = reader.read();
     REQUIRE(0 == buffer.committed());
     REQUIRE_FALSE(buffer);
+    reader.close();
+}
+
+TEST_CASE("Reading OSM XML 300: Change file") {
+    osmium::io::Reader reader{filename("300-change-file", "osc")};
+
+    const osmium::io::Header header{reader.header()};
+    REQUIRE(header.get("generator") == "testdata");
+
+    osmium::memory::Buffer buffer = reader.read();
+
+    auto it = buffer.select<osmium::Node>().begin();
+    REQUIRE(it != buffer.select<osmium::Node>().end());
+    REQUIRE(it->id() == 11);
+    REQUIRE(it->visible());
+
+    ++it;
+    REQUIRE(it->id() == 13);
+    REQUIRE_FALSE(it->visible());
+
+    ++it;
+    REQUIRE(it->id() == 14);
+    REQUIRE(it->visible());
+
+    ++it;
+    REQUIRE(it == buffer.select<osmium::Node>().end());
+
     reader.close();
 }
 

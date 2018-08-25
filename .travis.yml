@@ -38,14 +38,14 @@ addons_shortcuts:
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'boost-latest' ]
       packages: [ 'libboost1.55-all-dev', 'libgdal-dev', 'libproj-dev', 'libsparsehash-dev', 'spatialite-bin', 'clang-3.9']
-  addons_clang40: &clang40
-    apt:
-      sources: [ 'ubuntu-toolchain-r-test', 'boost-latest', 'llvm-toolchain-trusty-4.0' ]
-      packages: [ 'libboost1.55-all-dev', 'libgdal-dev', 'libproj-dev', 'libsparsehash-dev', 'spatialite-bin', 'clang-4.0']
   addons_clang50: &clang50
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'boost-latest', 'llvm-toolchain-trusty-5.0' ]
-      packages: [ 'libboost1.55-all-dev', 'libgdal-dev', 'libproj-dev', 'libsparsehash-dev', 'spatialite-bin', 'clang-5.0', 'clang-tidy-5.0', 'g++-6', 'gcc-6']
+      packages: [ 'libboost1.55-all-dev', 'libgdal-dev', 'libproj-dev', 'libsparsehash-dev', 'spatialite-bin', 'clang-5.0', 'g++-6', 'gcc-6']
+  addons_clang60: &clang60
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test', 'boost-latest', 'llvm-toolchain-trusty-6.0' ]
+      packages: [ 'libboost1.55-all-dev', 'libgdal-dev', 'libproj-dev', 'libsparsehash-dev', 'spatialite-bin', 'clang-6.0', 'g++-6', 'gcc-6']
   addons_gcc48: &gcc48
     apt:
       sources: [ 'ubuntu-toolchain-r-test', 'boost-latest' ]
@@ -100,16 +100,6 @@ matrix:
       addons: *clang39
 
     - os: linux
-      compiler: linux-clang40-release
-      env: CC='clang-4.0' CXX='clang++-4.0' BUILD_TYPE='Release'
-      addons: *clang40
-
-    - os: linux
-      compiler: linux-clang40-dev
-      env: CC='clang-4.0' CXX='clang++-4.0' BUILD_TYPE='Dev'
-      addons: *clang40
-
-    - os: linux
       compiler: linux-clang50-release
       env: CC='clang-5.0' CXX='clang++-5.0' BUILD_TYPE='Release'
       addons: *clang50
@@ -117,17 +107,27 @@ matrix:
     - os: linux
       compiler: linux-clang50-dev
       env: CC='clang-5.0' CXX='clang++-5.0' BUILD_TYPE='Dev'
-           CLANG_TIDY=clang-tidy-5.0
       addons: *clang50
 
     - os: linux
-      compiler: linux-clang50-debug
-      env: CC='clang-5.0' CXX='clang++-5.0' BUILD_TYPE='Debug'
-           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer"
-           LDFLAGS="-fsanitize=address,undefined,integer"
-      # LSAN doesn't work on container-based system
-      sudo: required
-      addons: *clang50
+      compiler: linux-clang60-release
+      env: CC='clang-6.0' CXX='clang++-6.0' BUILD_TYPE='Release'
+      addons: *clang60
+
+    - os: linux
+      compiler: linux-clang60-dev
+      env: CC='clang-6.0' CXX='clang++-6.0' BUILD_TYPE='Dev'
+      addons: *clang60
+
+# Disabled because it creates false-positives on the old travis systems
+#    - os: linux
+#      compiler: linux-clang50-debug
+#      env: CC='clang-5.0' CXX='clang++-5.0' BUILD_TYPE='Debug'
+#           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer"
+#           LDFLAGS="-fsanitize=address,undefined,integer"
+#      # LSAN doesn't work on container-based system
+#      sudo: required
+#      addons: *clang50
 
     # 2/ Linux GCC Builds
     - os: linux
@@ -211,7 +211,6 @@ matrix:
 
 install:
   - git clone --quiet --depth 1 https://github.com/mapbox/protozero.git ../protozero
-  - git clone --quiet --depth 1 https://github.com/osmcode/osm-testdata.git ../osm-testdata
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       brew remove gdal
@@ -221,12 +220,12 @@ install:
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
+  - git submodule update --init
   - mkdir build && cd build
-  - cmake -LA .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_WITH_CCACHE=1 -DOSM_TESTDATA="${TRAVIS_BUILD_DIR}/../osm-testdata" -DCLANG_TIDY=$(which ${CLANG_TIDY})
+  - cmake -LA .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_DATA_TESTS=ON -DBUILD_WITH_CCACHE=1
 
 script:
   - make VERBOSE=1 && ctest --output-on-failure
-  - if [ -n "${CLANG_TIDY}" ]; then make clang-tidy; fi
 
 after_success:
   - |

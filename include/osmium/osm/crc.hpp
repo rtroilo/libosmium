@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -52,39 +52,52 @@ DEALINGS IN THE SOFTWARE.
 
 namespace osmium {
 
-    namespace util {
+    inline namespace util {
 
         inline uint16_t byte_swap_16(uint16_t value) noexcept {
-# if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
             return __builtin_bswap16(value);
-# else
+#else
             return (value >> 8) | (value << 8);
-# endif
+#endif
         }
 
         inline uint32_t byte_swap_32(uint32_t value) noexcept {
-# if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
             return __builtin_bswap32(value);
-# else
+#else
             return  (value >> 24) |
                    ((value >>  8) & 0x0000FF00) |
                    ((value <<  8) & 0x00FF0000) |
                     (value << 24);
-# endif
+#endif
         }
 
         inline uint64_t byte_swap_64(uint64_t value) noexcept {
-# if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
             return __builtin_bswap64(value);
-# else
+#else
             const uint64_t val1 = byte_swap_32(value & 0xFFFFFFFF);
             const uint64_t val2 = byte_swap_32(value >> 32);
             return (val1 << 32) | val2;
-# endif
+#endif
         }
 
     } // namespace util
 
+    /**
+     * Framework for computing a checksum from OSM data. This class must be
+     * instantiated with a policy class that does the actual CRC calculations.
+     * It must have the process_byte(), process_bytes(), and checksum()
+     * member functions implemented according to the description in Boost
+     * (https://www.boost.org/doc/libs/release/libs/crc/crc.html).
+     *
+     * Typically you will either use the boost::crc_32_type from the Boost
+     * CRC library or the osmium::CRC_zlib class which uses the zlib library
+     * for this, but other checksums are possible.
+     *
+     * @tparam TCRC A CRC type.
+     */
     template <typename TCRC>
     class CRC {
 
@@ -112,7 +125,7 @@ namespace osmium {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
             m_crc.process_bytes(&value, sizeof(uint16_t));
 #else
-            const uint16_t v = osmium::util::byte_swap_16(value);
+            const uint16_t v = osmium::byte_swap_16(value);
             m_crc.process_bytes(&v, sizeof(uint16_t));
 #endif
         }
@@ -121,7 +134,7 @@ namespace osmium {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
             m_crc.process_bytes(&value, sizeof(uint32_t));
 #else
-            const uint32_t v = osmium::util::byte_swap_32(value);
+            const uint32_t v = osmium::byte_swap_32(value);
             m_crc.process_bytes(&v, sizeof(uint32_t));
 #endif
         }
@@ -130,7 +143,7 @@ namespace osmium {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
             m_crc.process_bytes(&value, sizeof(uint64_t));
 #else
-            const uint64_t v = osmium::util::byte_swap_64(value);
+            const uint64_t v = osmium::byte_swap_64(value);
             m_crc.process_bytes(&v, sizeof(uint64_t));
 #endif
         }

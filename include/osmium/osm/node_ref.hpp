@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -159,7 +159,7 @@ namespace osmium {
      * Node IDs.
      */
     inline constexpr bool operator!=(const NodeRef& lhs, const NodeRef& rhs) noexcept {
-        return ! (lhs == rhs);
+        return !(lhs == rhs);
     }
 
     /**
@@ -183,7 +183,7 @@ namespace osmium {
      * they reference.
      */
     inline constexpr bool operator<=(const NodeRef& lhs, const NodeRef& rhs) noexcept {
-        return ! (rhs < lhs);
+        return !(rhs < lhs);
     }
 
     /**
@@ -191,7 +191,7 @@ namespace osmium {
      * they reference.
      */
     inline constexpr bool operator>=(const NodeRef& lhs, const NodeRef& rhs) noexcept {
-        return ! (lhs < rhs);
+        return !(lhs < rhs);
     }
 
     /**

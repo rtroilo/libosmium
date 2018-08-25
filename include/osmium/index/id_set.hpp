@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -121,7 +121,7 @@ namespace osmium {
                         const auto slot = m_set->m_data[cid][IdSetDense<T>::offset(m_value)];
                         if (slot == 0) {
                             m_value += 8;
-                            m_value &= ~0x7;
+                            m_value &= ~0x7ull;
                         } else {
                             ++m_value;
                         }
@@ -162,7 +162,7 @@ namespace osmium {
             }
 
             bool operator!=(const IdSetDenseIterator<T>& rhs) const noexcept {
-                return ! (*this == rhs);
+                return !(*this == rhs);
             }
 
             T operator*() const noexcept {
@@ -191,22 +191,22 @@ namespace osmium {
             // which would mean less (but larger) memory allocations. For
             // relations Ids it could be smaller, because they would all fit
             // into a smaller allocation.
-            constexpr static const std::size_t chunk_bits = 22;
-            constexpr static const std::size_t chunk_size = 1 << chunk_bits;
+            constexpr static const std::size_t chunk_bits = 22u;
+            constexpr static const std::size_t chunk_size = 1u << chunk_bits;
 
             std::vector<std::unique_ptr<unsigned char[]>> m_data;
             T m_size = 0;
 
             static std::size_t chunk_id(T id) noexcept {
-                return id >> (chunk_bits + 3);
+                return id >> (chunk_bits + 3u);
             }
 
             static std::size_t offset(T id) noexcept {
-                return (id >> 3) & ((1 << chunk_bits) - 1);
+                return (id >> 3u) & ((1u << chunk_bits) - 1u);
             }
 
             static unsigned char bitmask(T id) noexcept {
-                return 1 << (id & 0x7);
+                return 1u << (id & 0x7u);
             }
 
             T last() const noexcept {
@@ -430,7 +430,7 @@ namespace osmium {
         }; // class IdSetSmall
 
         /// @deprecated Use nwr_array helper class instead.
-        template <template<typename> class IdSetType>
+        template <template <typename> class IdSetType>
         class NWRIdSet {
 
             using id_set_type = IdSetType<osmium::unsigned_object_id_type>;

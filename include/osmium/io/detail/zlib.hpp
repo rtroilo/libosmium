@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -34,7 +34,6 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include <osmium/io/error.hpp>
-#include <osmium/util/cast.hpp>
 
 #include <protozero/version.hpp>
 
@@ -46,6 +45,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include <zlib.h>
 
+#include <cassert>
+#include <limits>
 #include <string>
 
 namespace osmium {
@@ -64,7 +65,8 @@ namespace osmium {
              * @returns Compressed data.
              */
             inline std::string zlib_compress(const std::string& input) {
-                unsigned long output_size = ::compressBound(osmium::static_cast_with_assert<unsigned long>(input.size())); // NOLINT(google-runtime-int)
+                assert(input.size() < std::numeric_limits<unsigned long>::max());
+                unsigned long output_size = ::compressBound(static_cast<unsigned long>(input.size())); // NOLINT(google-runtime-int)
 
                 std::string output(output_size, '\0');
 
@@ -72,7 +74,7 @@ namespace osmium {
                     reinterpret_cast<unsigned char*>(const_cast<char *>(output.data())),
                     &output_size,
                     reinterpret_cast<const unsigned char*>(input.data()),
-                    osmium::static_cast_with_assert<unsigned long>(input.size()) // NOLINT(google-runtime-int)
+                    static_cast<unsigned long>(input.size()) // NOLINT(google-runtime-int)
                 );
 
                 if (result != Z_OK) {

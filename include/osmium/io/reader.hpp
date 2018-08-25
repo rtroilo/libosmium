@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -327,7 +327,7 @@ namespace osmium {
                     const pid_t pid = ::waitpid(m_childpid, &status, 0);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-                    if (pid < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                    if (pid < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) { // NOLINT(hicpp-signed-bitwise)
                         throw std::system_error{errno, std::system_category(), "subprocess returned error"};
                     }
 #pragma GCC diagnostic pop

@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -74,7 +74,7 @@ namespace osmium {
                     return 1; // stdout
                 }
 
-                int flags = O_WRONLY | O_CREAT;
+                int flags = O_WRONLY | O_CREAT; // NOLINT(hicpp-signed-bitwise)
                 if (allow_overwrite == osmium::io::overwrite::allow) {
                     flags |= O_TRUNC;
                 } else {

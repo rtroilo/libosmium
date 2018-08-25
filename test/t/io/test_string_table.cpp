@@ -1,6 +1,10 @@
 #include "catch.hpp"
 
 #include <osmium/io/detail/string_table.hpp>
+#include <osmium/util/misc.hpp>
+
+#include <iterator>
+#include <string>
 
 TEST_CASE("Empty StringStore") {
     const osmium::io::detail::StringStore ss{100};
@@ -129,7 +133,7 @@ TEST_CASE("Lots of strings in string table so chunk overflows") {
     auto it = st.begin();
     REQUIRE(std::string{} == *it++);
     for (int i = 0; i < n; ++i) {
-        REQUIRE(std::atoi(*it++) == i);
+        REQUIRE(osmium::detail::str_to_int<int>(*it++) == i);
     }
     REQUIRE(it == st.end());
 }

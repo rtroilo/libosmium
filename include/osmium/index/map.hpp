@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -264,7 +264,7 @@ namespace osmium {
 
         namespace map {
 
-            template <typename TId, typename TValue, template<typename, typename> class TMap>
+            template <typename TId, typename TValue, template <typename, typename> class TMap>
             struct create_map {
                 TMap<TId, TValue>* operator()(const std::vector<std::string>& /*config_string*/) {
                     return new TMap<TId, TValue>();
@@ -273,7 +273,7 @@ namespace osmium {
 
         } // namespace map
 
-        template <typename TId, typename TValue, template<typename, typename> class TMap>
+        template <typename TId, typename TValue, template <typename, typename> class TMap>
         inline bool register_map(const std::string& name) {
             return osmium::index::MapFactory<TId, TValue>::instance().register_map(name, [](const std::vector<std::string>& config) {
                 return map::create_map<TId, TValue, TMap>()(config);

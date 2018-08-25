@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -41,7 +41,7 @@ DEALINGS IN THE SOFTWARE.
 
 namespace osmium {
 
-    namespace util {
+    inline namespace util {
 
         /**
          * Stores key=value type options. This class can be used stand-alone or
@@ -112,7 +112,7 @@ namespace osmium {
                 if (pos == std::string::npos) {
                     m_options[data] = "true";
                 } else {
-                    const std::string value{data.substr(pos+1)};
+                    const std::string value{data.substr(pos + 1)};
                     set(data.substr(0, pos), value);
                 }
             }

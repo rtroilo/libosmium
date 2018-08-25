@@ -24,8 +24,8 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel;Dev;Cover
 project(libosmium)
 
 set(LIBOSMIUM_VERSION_MAJOR 2)
-set(LIBOSMIUM_VERSION_MINOR 13)
-set(LIBOSMIUM_VERSION_PATCH 1)
+set(LIBOSMIUM_VERSION_MINOR 14)
+set(LIBOSMIUM_VERSION_PATCH 2)
 
 set(LIBOSMIUM_VERSION
     "${LIBOSMIUM_VERSION_MAJOR}.${LIBOSMIUM_VERSION_MINOR}.${LIBOSMIUM_VERSION_PATCH}")
@@ -62,7 +62,6 @@ option(BUILD_BENCHMARKS "compile benchmark programs" ${dev_build})
 option(BUILD_DATA_TESTS "compile data tests, please run them with ctest" ${data_test_build})
 
 option(INSTALL_GDALCPP   "also install gdalcpp headers" OFF)
-option(INSTALL_UTFCPP    "also install utfcpp headers" OFF)
 
 option(WITH_PROFILING    "add flags needed for profiling" OFF)
 
@@ -416,7 +415,7 @@ endif()
 #
 #-----------------------------------------------------------------------------
 message(STATUS "Looking for clang-tidy")
-find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-6.0 clang-tidy-5.0)
+find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-7.0 clang-tidy-6.0 clang-tidy-5.0)
 
 if(CLANG_TIDY)
     message(STATUS "Looking for clang-tidy - found ${CLANG_TIDY}")
@@ -459,6 +458,7 @@ if(CLANG_TIDY)
     add_custom_target(clang-tidy
         ${CLANG_TIDY}
         -p ${CMAKE_BINARY_DIR}
+        "-extra-arg=-Wno-#pragma-messages"
         ${CT_CHECK_FILES}
     )
 else()
@@ -478,11 +478,6 @@ install(DIRECTORY include/osmium DESTINATION include)
 
 if(INSTALL_GDALCPP)
     install(FILES include/gdalcpp.hpp DESTINATION include)
-endif()
-
-if(INSTALL_UTFCPP)
-    install(FILES include/utf8.h DESTINATION include)
-    install(DIRECTORY include/utf8 DESTINATION include)
 endif()
 
 
@@ -513,8 +508,7 @@ include(CPack)
 if(BUILD_DATA_TESTS AND OSM_TESTDATA STREQUAL "OSM_TESTDATA-NOTFOUND")
     message("\n========================== WARNING ==========================")
     message("osm-testdata directory not found, data tests were disabled!\n")
-    message("You can get it from https://github.com/osmcode/osm-testdata")
-    message("Clone it into the same directory libosmium is in")
+    message("Call 'git submodule update --init' to install test data")
     message("or set the OSM_TESTDATA cmake variable to its path.")
     message("=============================================================\n")
 endif()

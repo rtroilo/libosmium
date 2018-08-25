@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -98,9 +98,9 @@ namespace osmium {
              */
             void append_to_string(std::string& s, const char infix, int precision) const {
                 if (valid()) {
-                    osmium::util::double2string(s, x, precision);
+                    osmium::double2string(s, x, precision);
                     s += infix;
-                    osmium::util::double2string(s, y, precision);
+                    osmium::double2string(s, y, precision);
                 } else {
                     s.append("invalid");
                 }
@@ -146,7 +146,7 @@ namespace osmium {
         }
 
         inline bool operator!=(const Coordinates& lhs, const Coordinates& rhs) noexcept {
-            return ! operator==(lhs, rhs);
+            return !(lhs == rhs);
         }
 
         template <typename TChar, typename TTraits>

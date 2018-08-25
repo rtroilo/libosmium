@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -274,7 +274,8 @@ namespace osmium {
          * @returns Reference to object to make calls chainable.
          */
         OSMObject& set_uid(const char* uid) {
-            return set_uid_from_signed(string_to_user_id(uid));
+            m_uid = string_to_uid(uid);
+            return *this;
         }
 
         /// Is this user anonymous?
@@ -315,6 +316,11 @@ namespace osmium {
         /// Get user name for this object.
         const char* user() const noexcept {
             return reinterpret_cast<const char*>(data() + sizeof_object());
+        }
+
+        /// Clear user name.
+        void clear_user() noexcept {
+            std::memset(data() + sizeof_object(), 0, user_size());
         }
 
         /// Get the list of tags for this object.
@@ -456,7 +462,7 @@ namespace osmium {
     }
 
     inline bool operator!=(const OSMObject& lhs, const OSMObject& rhs) noexcept {
-        return ! (lhs == rhs);
+        return !(lhs == rhs);
     }
 
     /**
@@ -475,8 +481,10 @@ namespace osmium {
      * ordering.
      */
     inline bool operator<(const OSMObject& lhs, const OSMObject& rhs) noexcept {
-        return const_tie(lhs.type(), lhs.id() > 0, lhs.positive_id(), lhs.version(), lhs.timestamp()) <
-               const_tie(rhs.type(), rhs.id() > 0, rhs.positive_id(), rhs.version(), rhs.timestamp());
+        return const_tie(lhs.type(), lhs.id() > 0, lhs.positive_id(), lhs.version(),
+                   ((lhs.timestamp().valid() && rhs.timestamp().valid()) ? lhs.timestamp() : osmium::Timestamp())) <
+               const_tie(rhs.type(), rhs.id() > 0, rhs.positive_id(), rhs.version(),
+                   ((lhs.timestamp().valid() && rhs.timestamp().valid()) ? rhs.timestamp() : osmium::Timestamp()));
     }
 
     inline bool operator>(const OSMObject& lhs, const OSMObject& rhs) noexcept {
@@ -484,11 +492,11 @@ namespace osmium {
     }
 
     inline bool operator<=(const OSMObject& lhs, const OSMObject& rhs) noexcept {
-        return ! (rhs < lhs);
+        return !(rhs < lhs);
     }
 
     inline bool operator>=(const OSMObject& lhs, const OSMObject& rhs) noexcept {
-        return ! (lhs < rhs);
+        return !(lhs < rhs);
     }
 
 } // namespace osmium

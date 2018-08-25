@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -209,7 +209,7 @@ namespace osmium {
             std::unique_ptr<osmium::io::Decompressor> create_decompressor(osmium::io::file_compression compression, int fd) const {
                 const auto callbacks = find_callbacks(compression);
                 auto p = std::unique_ptr<osmium::io::Decompressor>(std::get<1>(callbacks)(fd));
-                p->set_file_size(osmium::util::file_size(fd));
+                p->set_file_size(osmium::file_size(fd));
                 return p;
             }
 
@@ -265,7 +265,7 @@ namespace osmium {
         class NoDecompressor : public Decompressor {
 
             int m_fd = -1;
-            const char *m_buffer = nullptr;
+            const char* m_buffer = nullptr;
             std::size_t m_buffer_size = 0;
             std::size_t m_offset = 0;
 

@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -49,6 +49,36 @@ namespace osmium {
 
     namespace detail {
 
+        inline void add_2digit_int_to_string(int value, std::string& out) {
+            assert(value >= 0 && value <= 99);
+            if (value > 9) {
+                const int dec = value / 10;
+                out += static_cast<char>('0' + dec);
+                value -= dec * 10;
+            } else {
+                out += '0';
+            }
+            out += static_cast<char>('0' + value);
+        }
+
+        inline void add_4digit_int_to_string(int value, std::string& out) {
+            assert(value >= 1000 && value <= 9999);
+
+            const int dec1 = value / 1000;
+            out += static_cast<char>('0' + dec1);
+            value -= dec1 * 1000;
+
+            const int dec2 = value / 100;
+            out += static_cast<char>('0' + dec2);
+            value -= dec2 * 100;
+
+            const int dec3 = value / 10;
+            out += static_cast<char>('0' + dec3);
+            value -= dec3 * 10;
+
+            out += static_cast<char>('0' + value);
+        }
+
         inline time_t parse_timestamp(const char* str) {
             static const int mon_lengths[] = {
                 31, 29, 31, 30, 31, 30,
@@ -74,7 +104,7 @@ namespace osmium {
                 str[17] >= '0' && str[17] <= '9' &&
                 str[18] >= '0' && str[18] <= '9' &&
                 str[19] == 'Z') {
-                struct tm tm;
+                std::tm tm; // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
                 tm.tm_year = (str[ 0] - '0') * 1000 +
                              (str[ 1] - '0') *  100 +
                              (str[ 2] - '0') *   10 +
@@ -114,17 +144,35 @@ namespace osmium {
      */
     class Timestamp {
 
-        // length of ISO timestamp string yyyy-mm-ddThh:mm:ssZ\0
-        static constexpr const int timestamp_length = 20 + 1;
-
-        // The timestamp format for OSM timestamps in strftime(3) format.
-        // This is the ISO-Format "yyyy-mm-ddThh:mm:ssZ".
-        static const char* timestamp_format() {
-            static const char f[timestamp_length] = "%Y-%m-%dT%H:%M:%SZ";
-            return f;
-        }
-
         uint32_t m_timestamp = 0;
+
+        void to_iso_str(std::string& s) const {
+            std::tm tm; // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+            time_t sse = seconds_since_epoch();
+#ifndef NDEBUG
+            auto result =
+#endif
+#ifndef _WIN32
+            gmtime_r(&sse, &tm);
+            assert(result != nullptr);
+#else
+            gmtime_s(&tm, &sse);
+            assert(result == 0);
+#endif
+
+            detail::add_4digit_int_to_string(tm.tm_year + 1900, s);
+            s += '-';
+            detail::add_2digit_int_to_string(tm.tm_mon + 1, s);
+            s += '-';
+            detail::add_2digit_int_to_string(tm.tm_mday, s);
+            s += 'T';
+            detail::add_2digit_int_to_string(tm.tm_hour, s);
+            s += ':';
+            detail::add_2digit_int_to_string(tm.tm_min, s);
+            s += ':';
+            detail::add_2digit_int_to_string(tm.tm_sec, s);
+            s += 'Z';
+        }
 
     public:
 
@@ -223,27 +271,21 @@ namespace osmium {
             std::string s;
 
             if (m_timestamp != 0) {
-                struct tm tm;
-                time_t sse = seconds_since_epoch();
-#ifndef NDEBUG
-                auto result =
-#endif
-#ifndef _WIN32
-                gmtime_r(&sse, &tm);
-                assert(result != nullptr);
-#else
-                gmtime_s(&tm, &sse);
-                assert(result == 0);
-#endif
-
-                s.resize(timestamp_length);
-                /* This const_cast is ok, because we know we have enough space
-                in the string for the format we are using (well at least until
-                the year will have 5 digits). And by setting the size
-                afterwards from the result of strftime we make sure thats set
-                right, too. */
-                s.resize(strftime(const_cast<char*>(s.c_str()), timestamp_length, timestamp_format(), &tm));
+                to_iso_str(s);
             }
+
+            return s;
+        }
+
+        /**
+         * Return the timestamp as string in ISO date/time
+         * ("yyyy-mm-ddThh:mm:ssZ") format. If the timestamp is invalid, the
+         * string "1970-01-01T00:00:00Z" will be returned.
+         */
+        std::string to_iso_all() const {
+            std::string s;
+
+            to_iso_str(s);
 
             return s;
         }
@@ -289,11 +331,11 @@ namespace osmium {
     }
 
     inline bool operator<=(const Timestamp& lhs, const Timestamp& rhs) noexcept {
-        return ! (rhs < lhs);
+        return !(rhs < lhs);
     }
 
     inline bool operator>=(const Timestamp& lhs, const Timestamp& rhs) noexcept {
-        return ! (lhs < rhs);
+        return !(lhs < rhs);
     }
 
     template <>

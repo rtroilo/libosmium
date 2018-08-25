@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -255,7 +255,8 @@ namespace osmium {
          * @returns Reference to changeset to make calls chainable.
          */
         Changeset& set_uid(const char* uid) {
-            return set_uid_from_signed(string_to_user_id(uid));
+            m_uid = string_to_uid(uid);
+            return *this;
         }
 
         /// Is this user anonymous?
@@ -365,6 +366,11 @@ namespace osmium {
             return reinterpret_cast<const char*>(data() + sizeof(Changeset));
         }
 
+        /// Clear user name.
+        void clear_user() noexcept {
+            std::memset(data() + sizeof(Changeset), 0, user_size());
+        }
+
         /// Get the list of tags.
         const TagList& tags() const {
             return osmium::detail::subitem_of_type<const TagList>(cbegin(), cend());
@@ -440,7 +446,7 @@ namespace osmium {
     }
 
     inline bool operator!=(const Changeset& lhs, const Changeset& rhs) {
-        return ! (lhs == rhs);
+        return !(lhs == rhs);
     }
 
     /**
@@ -455,11 +461,11 @@ namespace osmium {
     }
 
     inline bool operator<=(const Changeset& lhs, const Changeset& rhs) {
-        return ! (rhs < lhs);
+        return !(rhs < lhs);
     }
 
     inline bool operator>=(const Changeset& lhs, const Changeset& rhs) {
-        return ! (lhs < rhs);
+        return !(lhs < rhs);
     }
 
 } // namespace osmium

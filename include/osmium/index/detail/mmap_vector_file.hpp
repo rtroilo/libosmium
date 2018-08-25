@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -54,7 +54,7 @@ namespace osmium {
         class mmap_vector_file : public mmap_vector_base<T> {
 
             static std::size_t filesize(int fd) {
-                const auto size = osmium::util::file_size(fd);
+                const auto size = osmium::file_size(fd);
 
                 if (size % sizeof(T) != 0) {
                     throw std::runtime_error{"Index file has wrong size (must be multiple of " + std::to_string(sizeof(T)) + ")."};

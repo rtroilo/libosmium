@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -144,7 +144,7 @@ namespace osmium {
             }; // class VectorBasedDenseMap
 
 
-            template <typename TId, typename TValue, template<typename...> class TVector>
+            template <typename TId, typename TValue, template <typename...> class TVector>
             class VectorBasedSparseMap : public Map<TId, TValue> {
 
             public:

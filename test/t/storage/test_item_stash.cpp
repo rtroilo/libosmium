@@ -4,6 +4,8 @@
 #include <osmium/storage/item_stash.hpp>
 
 #include <sstream>
+#include <string>
+#include <vector>
 
 osmium::memory::Buffer generate_test_data() {
     using namespace osmium::builder::attr; // NOLINT(google-build-using-namespace)
@@ -78,7 +80,7 @@ TEST_CASE("Item stash") {
             handle = osmium::ItemStash::handle_type{};
         }
 
-        id++;
+        ++id;
     }
 
     REQUIRE(stash.size() == 120);
@@ -100,7 +102,7 @@ TEST_CASE("Item stash") {
         } else {
             ++count_invalid;
         }
-        id++;
+        ++id;
     }
 
     REQUIRE(count_valid   == 120);
@@ -121,7 +123,7 @@ TEST_CASE("Item stash") {
             const auto& obj = static_cast<const osmium::OSMObject&>(item);
             REQUIRE(obj.id() == id);
         }
-        id++;
+        ++id;
     }
 
     stash.clear();

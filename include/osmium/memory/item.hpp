@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -32,8 +32,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 */
-
-#include <osmium/util/cast.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -165,7 +163,7 @@ namespace osmium {
             }
 
             item_size_type padded_size() const {
-                return static_cast_with_assert<item_size_type>(padded_length(m_size));
+                return static_cast<item_size_type>(padded_length(m_size));
             }
 
             item_type type() const noexcept {

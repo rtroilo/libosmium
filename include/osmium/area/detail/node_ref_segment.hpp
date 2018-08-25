@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -296,7 +296,7 @@ namespace osmium {
              *          or a defined Location if the segments intersect.
              */
             inline osmium::Location calculate_intersection(const NodeRefSegment& s1, const NodeRefSegment& s2) noexcept {
-                // See http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+                // See https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
                 // for some hints about how the algorithm works.
                 const vec p0{s1.first()};
                 const vec p1{s1.second()};
@@ -348,11 +348,12 @@ namespace osmium {
                         osmium::Location location;
                     };
 
-                    seg_loc sl[4];
-                    sl[0] = {0, s1.first().location() };
-                    sl[1] = {0, s1.second().location()};
-                    sl[2] = {1, s2.first().location() };
-                    sl[3] = {1, s2.second().location()};
+                    seg_loc sl[4] = {
+                        {0, s1.first().location() },
+                        {0, s1.second().location()},
+                        {1, s2.first().location() },
+                        {1, s2.second().location()},
+                    };
 
                     std::sort(sl, sl+4, [](const seg_loc& lhs, const seg_loc& rhs) {
                         return lhs.location < rhs.location;

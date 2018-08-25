@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -194,10 +194,15 @@ namespace osmium {
                             case protozero::tag_and_type(OSMFormat::Info::optional_int32_version, protozero::pbf_wire_type::varint):
                                 {
                                     const auto version = pbf_info.get_int32();
-                                    if (version < 0) {
+                                    if (version < -1) {
                                         throw osmium::pbf_error{"object version must not be negative"};
                                     }
-                                    object.set_version(static_cast<object_version_type>(version));
+
+                                    if (version == -1) {
+                                        object.set_version(0U);
+                                    } else {
+                                        object.set_version(static_cast<object_version_type>(version));
+                                    }
                                 }
                                 break;
                             case protozero::tag_and_type(OSMFormat::Info::optional_int64_timestamp, protozero::pbf_wire_type::varint):
@@ -206,10 +211,15 @@ namespace osmium {
                             case protozero::tag_and_type(OSMFormat::Info::optional_int64_changeset, protozero::pbf_wire_type::varint):
                                 {
                                     const auto changeset_id = pbf_info.get_int64();
-                                    if (changeset_id < 0 || changeset_id >= std::numeric_limits<changeset_id_type>::max()) {
+                                    if (changeset_id < -1 || changeset_id >= std::numeric_limits<changeset_id_type>::max()) {
                                         throw osmium::pbf_error{"object changeset_id must be between 0 and 2^32-1"};
                                     }
-                                    object.set_changeset(static_cast<changeset_id_type>(changeset_id));
+
+                                    if (changeset_id == -1) {
+                                        object.set_changeset(0U);
+                                    } else {
+                                        object.set_changeset(static_cast<changeset_id_type>(changeset_id));
+                                    }
                                 }
                                 break;
                             case protozero::tag_and_type(OSMFormat::Info::optional_int32_uid, protozero::pbf_wire_type::varint):
@@ -357,14 +367,14 @@ namespace osmium {
 
                     if (!refs.empty()) {
                         osmium::builder::WayNodeListBuilder wnl_builder{builder};
-                        osmium::util::DeltaDecode<int64_t> ref;
+                        osmium::DeltaDecode<int64_t> ref;
                         if (lats.empty()) {
                             for (const auto& ref_value : refs) {
                                 wnl_builder.add_node_ref(ref.update(ref_value));
                             }
                         } else {
-                            osmium::util::DeltaDecode<int64_t> lon;
-                            osmium::util::DeltaDecode<int64_t> lat;
+                            osmium::DeltaDecode<int64_t> lon;
+                            osmium::DeltaDecode<int64_t> lat;
                             while (!refs.empty() && !lons.empty() && !lats.empty()) {
                                 wnl_builder.add_node_ref(
                                     ref.update(refs.front()),
@@ -429,7 +439,7 @@ namespace osmium {
 
                     if (!refs.empty()) {
                         osmium::builder::RelationMemberListBuilder rml_builder{builder};
-                        osmium::util::DeltaDecode<int64_t> ref;
+                        osmium::DeltaDecode<int64_t> ref;
                         while (!roles.empty() && !refs.empty() && !types.empty()) {
                             const auto& r = m_stringtable.at(roles.front());
                             const int type = types.front();
@@ -494,9 +504,9 @@ namespace osmium {
                         }
                     }
 
-                    osmium::util::DeltaDecode<int64_t> dense_id;
-                    osmium::util::DeltaDecode<int64_t> dense_latitude;
-                    osmium::util::DeltaDecode<int64_t> dense_longitude;
+                    osmium::DeltaDecode<int64_t> dense_id;
+                    osmium::DeltaDecode<int64_t> dense_latitude;
+                    osmium::DeltaDecode<int64_t> dense_longitude;
 
                     auto tag_it = tags.begin();
 
@@ -595,13 +605,13 @@ namespace osmium {
                         }
                     }
 
-                    osmium::util::DeltaDecode<int64_t> dense_id;
-                    osmium::util::DeltaDecode<int64_t> dense_latitude;
-                    osmium::util::DeltaDecode<int64_t> dense_longitude;
-                    osmium::util::DeltaDecode<int64_t> dense_uid;
-                    osmium::util::DeltaDecode<int64_t> dense_user_sid;
-                    osmium::util::DeltaDecode<int64_t> dense_changeset;
-                    osmium::util::DeltaDecode<int64_t> dense_timestamp;
+                    osmium::DeltaDecode<int64_t> dense_id;
+                    osmium::DeltaDecode<int64_t> dense_latitude;
+                    osmium::DeltaDecode<int64_t> dense_longitude;
+                    osmium::DeltaDecode<int64_t> dense_uid;
+                    osmium::DeltaDecode<int64_t> dense_user_sid;
+                    osmium::DeltaDecode<int64_t> dense_changeset;
+                    osmium::DeltaDecode<int64_t> dense_timestamp;
 
                     auto tag_it = tags.begin();
 
@@ -624,19 +634,29 @@ namespace osmium {
                             if (!versions.empty()) {
                                 const auto version = versions.front();
                                 versions.drop_front();
-                                if (version < 0) {
+                                if (version < -1) {
                                     throw osmium::pbf_error{"object version must not be negative"};
                                 }
-                                node.set_version(static_cast<osmium::object_version_type>(version));
+
+                                if (version == -1) {
+                                    node.set_version(0U);
+                                } else {
+                                    node.set_version(static_cast<osmium::object_version_type>(version));
+                                }
                             }
 
                             if (!changesets.empty()) {
                                 const auto changeset_id = dense_changeset.update(changesets.front());
                                 changesets.drop_front();
-                                if (changeset_id < 0 || changeset_id >= std::numeric_limits<changeset_id_type>::max()) {
+                                if (changeset_id < -1 || changeset_id >= std::numeric_limits<changeset_id_type>::max()) {
                                     throw osmium::pbf_error{"object changeset_id must be between 0 and 2^32-1"};
                                 }
-                                node.set_changeset(static_cast<osmium::changeset_id_type>(changeset_id));
+
+                                if (changeset_id == -1) {
+                                    node.set_changeset(0U);
+                                } else {
+                                    node.set_changeset(static_cast<osmium::changeset_id_type>(changeset_id));
+                                }
                             }
 
                             if (!timestamps.empty()) {

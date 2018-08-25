@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -771,7 +771,7 @@ namespace osmium {
         }
 
         inline bool operator!=(const Buffer& lhs, const Buffer& rhs) noexcept {
-            return ! (lhs == rhs);
+            return !(lhs == rhs);
         }
 
     } // namespace memory

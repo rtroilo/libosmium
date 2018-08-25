@@ -2,18 +2,96 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [unreleased] -
 
 ### Added
 
-* Various tests.
-* Add polygon implementation for WKT and GeoJSON geometry factories. (Thanks
-  to Horace Williams.)
+### Changed
+
+### Fixed
+
+
+## [2.14.2] - 2018-07-23
+
+### Fixed
+
+* PBF reader and writer depended on byte order of system architecture.
+* Removed an unreliable test that didn't work on some architectures.
+
+
+## [2.14.1] - 2018-07-23
 
 ### Changed
 
+* Libosmium now needs the newest Protozero version 1.6.3.
+* Removes dependency on the utfcpp library for conversions between Unicode
+  code points and UTF-8. We have our own functions for this now. This also
+  gives us more control on where errors are thrown in this code.
+* Add support for using the CRC32 implementation from the zlib library in
+  addition to the one from Boost. It is significantly faster and means we
+  have one less dependency, because zlib is needed anyway in almost all
+  programs using Osmium due to its use in the PBF format. Set macro
+  `OSMIUM_TEST_CRC_USE_BOOST` before compiling the tests, if you want to
+  run the tests with the boost library code, otherwise it will use the
+  zlib code. Note that to use this you have to change your software slightly,
+  see the documentation of the `CRC_zlib` class for details.
+* Add a `clear_user()` function to OSMObject and Changeset which allows
+  removing the user name of an entity without re-creating it in a new buffer.
+* In Osmium the 0 value of the Timestamp is used to denote the "invalid"
+  Timestamp, and its output using the `to_iso()` function is the empty
+  string. But this is the wrong output for OSM XML files, where a
+  timestamp that's not set should still be output as
+  1970-01-01T00:00:00Z. This version introduces a new `to_is_all()`
+  function which will do this and uses that function in the XML writer.
+* Use `protozero::byteswap_inplace` instead of `htonl`/`ntohl`. Makes the
+  code simpler and also works on Windows.
+* Marked `MultipolygonCollector` class as deprecated. Use the
+  `MultipolygonManager` class introduced in 2.13.0 instead.
+* Lots of code cleanups especially around `assert`s. Libosmium checks out
+  clean with `clang-tidy` now. Some documentation updates.
+
+### Fixed
+
+* Fix compilation error when `fileno()` is a macro (as in OpenBSD 6.3).
+* Make `Box` output consistent with the output of a single `Location`
+  and avoids problems with some locales.
+
+
+## [2.14.0] - 2018-03-31
+
+### Added
+
+* Add `ReaderWithProgressBar` class. This wraps an `osmium::io::Reader` and an
+  `osmium::ProgressBar` into a nice little package allowing easier use in the
+  common case.
+* Add polygon implementation for WKT and GeoJSON geometry factories. (Thanks
+  to Horace Williams.)
+* Various tests.
+
+### Changed
+
+* Add git submodule with `osm-testdata` repository. Before this the repository
+  had to be installed externally. Now a submodule update can be used to get the
+  correct version of the osm-testdata repository.
+* The XML file reader was rewritten to be more strict. Cases where it could
+  be tricked into failing badly were removed. There are now more tests for the
+  XML parser.
+* Replaced `strftime` by our own implementation. Uses a specialized
+  implementation for our use case instead the more general `strftime`.
+  Benchmarked this to be faster.
+* Changed the way IDs are parsed from strings. No asserts are used any more but
+  checks are done and an exception is thrown when IDs are out of range. This
+  also changes the way negative values are handled. The value `-1` is now
+  always accepted for all IDs and returned as `0`. This deprecates the
+  `string_to_user_id()` function, use `string_to_uid()` instead which returns a
+  different type.
+* It was always a bit confusing that some of the util classes and functions are
+  directly in the `osmium` namespace and some are in `osmium::util`. The
+  `osmium::util` namespace is now declared `inline`. which allows all util
+  classes and functions to be addressed directly in the `osmium` namespace
+  while keeping backwards compatibility.
 * An error is now thrown when the deprecated `pbf_add_metadata` file format
   option is used. Use `add_metadata` instead.
 * Extended the `add_metadata` file format option. In addition to allowing the
@@ -21,7 +99,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   are now recognized. The option can also be set to a list of attributes
   separated by the `+` sign. Attributes are `version`, `timestamp`,
   `changeset`, `uid`, and `user`. All output formats have been updated to
-  only output the specified attributes. (Thanks to Michael Reichert.)
+  only output the specified attributes. This is based on the new
+  `osmium::metadata_options` class which stores information about what metadata
+  an `OSMObject` has or should have. (Thanks to Michael Reichert.)
+* The `<` (less than) operator on `OSMObject`s now ignores the case when
+  one or both of the timestamps on the objects are not set at all. This
+  allows better handling of OSM data files with reduced metadata.
+* Allow `version = -1` and `changeset = -1` in PBF input. This value is
+  sometimes used by other programs to denote "no value". Osmium uses the `0`
+  for this.
 * The example programs using the `getopt_long` function have been rewritten to
   work without it. This makes using libosmium on Windows easier, where this
   function is not available.
@@ -35,10 +121,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Add MSYS2 build to Appveyor and fixed some Windows compile issues. (Thanks
   to alex85k.)
 * Use array instead of map to store input/output format creators.
-* Update included `catch.hpp` to version 1.12.0.
+* Update included `catch.hpp` to version 1.12.1.
 
 ### Fixed
 
+* Remove check for lost ways in multipolygon assembler. This rules out too many
+  valid multipolygons, more specifically more complex ones with touching inner
+  rings.
 * Use different macro magic for registering index maps. This allows the maps
   to be used for several types at the same time.
 * Lots of code was rewritten to fix warnings reported by `clang-tidy` making
@@ -49,7 +138,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Range checks in o5m parser throw exceptions now instead of triggering
   assertions.
 * Better checking that PBF data is in range.
-* Throw exception if elements in XML file are nested too deep.
 * Check `read` and `write` system calls for `EINTR`.
 * Use tag and type from protozero to make PBF parser more robust.
 * Test `testdata-multipolygon` on Windows was using the wrong executable name.
@@ -781,7 +869,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   Doxygen (up to version 1.8.8). This version contains a workaround to fix
   this.
 
-[unreleased]: https://github.com/osmcode/libosmium/compare/v2.13.1...HEAD
+[unreleased]: https://github.com/osmcode/libosmium/compare/v2.14.2...HEAD
+[2.14.2]: https://github.com/osmcode/libosmium/compare/v2.14.1...v2.14.2
+[2.14.1]: https://github.com/osmcode/libosmium/compare/v2.14.0...v2.14.1
+[2.14.0]: https://github.com/osmcode/libosmium/compare/v2.13.1...v2.14.0
 [2.13.1]: https://github.com/osmcode/libosmium/compare/v2.13.0...v2.13.1
 [2.13.0]: https://github.com/osmcode/libosmium/compare/v2.12.2...v2.13.0
 [2.12.2]: https://github.com/osmcode/libosmium/compare/v2.12.1...v2.12.2

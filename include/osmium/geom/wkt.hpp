@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -80,7 +80,7 @@ namespace osmium {
                 /* Point */
 
                 point_type make_point(const osmium::geom::Coordinates& xy) const {
-                    std::string str {m_srid_prefix};
+                    std::string str{m_srid_prefix};
                     str += "POINT";
                     xy.append_to_string(str, '(', ' ', ')', m_precision);
                     return str;

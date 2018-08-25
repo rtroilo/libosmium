@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -53,7 +53,7 @@ DEALINGS IN THE SOFTWARE.
 
 namespace osmium {
 
-    namespace util {
+    inline namespace util {
 
         /**
          * Class for wrapping memory mapping system calls.
@@ -139,7 +139,7 @@ namespace osmium {
 
             static std::size_t check_size(std::size_t size) {
                 if (size == 0) {
-                    return osmium::util::get_pagesize();
+                    return osmium::get_pagesize();
                 }
                 return size;
             }
@@ -157,8 +157,8 @@ namespace osmium {
                 }
 
                 // Make sure the file backing this mapping is large enough.
-                if (osmium::util::file_size(fd) < m_size + m_offset) {
-                    osmium::util::resize_file(fd, m_size + m_offset);
+                if (osmium::file_size(fd) < m_size + m_offset) {
+                    osmium::resize_file(fd, m_size + m_offset);
                 }
                 return fd;
             }
@@ -537,12 +537,12 @@ inline int osmium::util::MemoryMapping::get_protection() const noexcept {
     if (m_mapping_mode == mapping_mode::readonly) {
         return PROT_READ;
     }
-    return PROT_READ | PROT_WRITE;
+    return PROT_READ | PROT_WRITE; // NOLINT(hicpp-signed-bitwise)
 }
 
 inline int osmium::util::MemoryMapping::get_flags() const noexcept {
     if (m_fd == -1) {
-        return MAP_PRIVATE | MAP_ANONYMOUS;
+        return MAP_PRIVATE | MAP_ANONYMOUS; // NOLINT(hicpp-signed-bitwise)
     }
     if (m_mapping_mode == mapping_mode::write_shared) {
         return MAP_SHARED;
@@ -619,15 +619,15 @@ inline void osmium::util::MemoryMapping::resize(std::size_t new_size) {
 // =========== Windows implementation =============
 
 /* References:
- * CreateFileMapping: http://msdn.microsoft.com/en-us/library/aa366537(VS.85).aspx
- * CloseHandle:       http://msdn.microsoft.com/en-us/library/ms724211(VS.85).aspx
- * MapViewOfFile:     http://msdn.microsoft.com/en-us/library/aa366761(VS.85).aspx
- * UnmapViewOfFile:   http://msdn.microsoft.com/en-us/library/aa366882(VS.85).aspx
+ * CreateFileMapping: https://msdn.microsoft.com/en-us/library/aa366537(VS.85).aspx
+ * CloseHandle:       https://msdn.microsoft.com/en-us/library/ms724211(VS.85).aspx
+ * MapViewOfFile:     https://msdn.microsoft.com/en-us/library/aa366761(VS.85).aspx
+ * UnmapViewOfFile:   https://msdn.microsoft.com/en-us/library/aa366882(VS.85).aspx
  */
 
 namespace osmium {
 
-    namespace util {
+    inline namespace util {
 
         inline DWORD dword_hi(uint64_t x) {
             return static_cast<DWORD>(x >> 32);
@@ -679,16 +679,16 @@ inline HANDLE osmium::util::MemoryMapping::create_file_mapping() const noexcept 
     return CreateFileMapping(get_handle(),
                              nullptr,
                              get_protection(),
-                             osmium::util::dword_hi(static_cast<uint64_t>(m_size) + m_offset),
-                             osmium::util::dword_lo(static_cast<uint64_t>(m_size) + m_offset),
+                             osmium::dword_hi(static_cast<uint64_t>(m_size) + m_offset),
+                             osmium::dword_lo(static_cast<uint64_t>(m_size) + m_offset),
                              nullptr);
 }
 
 inline void* osmium::util::MemoryMapping::map_view_of_file() const noexcept {
     return MapViewOfFile(m_handle,
                          get_flags(),
-                         osmium::util::dword_hi(m_offset),
-                         osmium::util::dword_lo(m_offset),
+                         osmium::dword_hi(m_offset),
+                         osmium::dword_lo(m_offset),
                          m_size);
 }
 

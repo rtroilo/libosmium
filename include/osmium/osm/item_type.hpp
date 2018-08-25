@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -68,7 +68,7 @@ namespace osmium {
      */
     inline item_type nwr_index_to_item_type(unsigned int i) noexcept {
         assert(i <= 2);
-        return item_type(i+1);
+        return item_type(i + 1);
     }
 
     /**

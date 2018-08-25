@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -174,7 +174,7 @@ namespace osmium {
          * stream.
          *
          * @tparam TStream Output stream type (like std::cout, std::cerr, or
-         *                 osmium::util::VerboseOutput).
+         *                 osmium::VerboseOutput).
          * @param stream Reference to stream where the output should go.
          * @param mu Memory usage data as returned by the used_memory()
          *                  functions of various relations managers.

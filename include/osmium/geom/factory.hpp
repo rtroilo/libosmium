@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -293,7 +293,7 @@ namespace osmium {
                 return linestring_finish(num_points);
             }
 
-            linestring_type create_linestring(const osmium::Way& way, use_nodes un=use_nodes::unique, direction dir = direction::forward) {
+            linestring_type create_linestring(const osmium::Way& way, use_nodes un = use_nodes::unique, direction dir = direction::forward) {
                 try {
                     return create_linestring(way.nodes(), un, dir);
                 } catch (osmium::geometry_error& e) {
@@ -340,7 +340,6 @@ namespace osmium {
                 size_t num_points = 0;
 
                 if (un == use_nodes::unique) {
-                    osmium::Location last_location;
                     switch (dir) {
                         case direction::forward:
                             num_points = fill_polygon_unique(wnl.cbegin(), wnl.cend());
@@ -367,7 +366,7 @@ namespace osmium {
                 return polygon_finish(num_points);
             }
 
-            polygon_type create_polygon(const osmium::Way& way, use_nodes un=use_nodes::unique, direction dir = direction::forward) {
+            polygon_type create_polygon(const osmium::Way& way, use_nodes un = use_nodes::unique, direction dir = direction::forward) {
                 try {
                     return create_polygon(way.nodes(), un, dir);
                 } catch (osmium::geometry_error& e) {

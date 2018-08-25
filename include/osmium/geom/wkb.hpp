@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -35,7 +35,6 @@ DEALINGS IN THE SOFTWARE.
 
 #include <osmium/geom/coordinates.hpp>
 #include <osmium/geom/factory.hpp>
-#include <osmium/util/cast.hpp>
 #include <osmium/util/endian.hpp>
 
 #include <algorithm>
@@ -70,8 +69,8 @@ namespace osmium {
                 out.reserve(str.size() * 2);
 
                 for (char c : str) {
-                    out += lookup_hex[(c >> 4) & 0xf];
-                    out += lookup_hex[c & 0xf];
+                    out += lookup_hex[(static_cast<unsigned int>(c) >> 4u) & 0xfu];
+                    out += lookup_hex[ static_cast<unsigned int>(c)        & 0xfu];
                 }
 
                 return out;
@@ -83,7 +82,7 @@ namespace osmium {
                 * Type of WKB geometry.
                 * These definitions are from
                 * 99-049_OpenGIS_Simple_Features_Specification_For_SQL_Rev_1.1.pdf (for WKB)
-                * and http://trac.osgeo.org/postgis/browser/trunk/doc/ZMSgeoms.txt (for EWKB).
+                * and https://trac.osgeo.org/postgis/browser/trunk/doc/ZMSgeoms.txt (for EWKB).
                 * They are used to encode geometries into the WKB format.
                 */
                 enum wkbGeometryType : uint32_t {

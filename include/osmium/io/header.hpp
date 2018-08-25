@@ -3,7 +3,7 @@
 
 /*
 
-This file is part of Osmium (http://osmcode.org/libosmium).
+This file is part of Osmium (https://osmcode.org/libosmium).
 
 Copyright 2013-2018 Jochen Topf <jochen@topf.org> and others (see README).
 
@@ -65,7 +65,7 @@ namespace osmium {
          * specially. The the Options parent class for details on how to
          * set and get those key-value pairs.
          */
-        class Header : public osmium::util::Options {
+        class Header : public osmium::Options {
 
             /// Bounding boxes
             std::vector<osmium::Box> m_boxes{};
@@ -81,7 +81,7 @@ namespace osmium {
 
             Header() = default;
 
-            Header(const std::initializer_list<osmium::util::Options::value_type>& values) :
+            Header(const std::initializer_list<osmium::Options::value_type>& values) :
                 Options(values) {
             }
 
